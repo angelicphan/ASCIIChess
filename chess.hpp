@@ -93,7 +93,7 @@ class chess
 {
   private:
     piece _pieces[PIECES];            //Chess pieces
-    vector<vector<piece>> _board;     //Board
+    vector<vector<piece> > _board;     //Board
 
   public:
     //Constructor

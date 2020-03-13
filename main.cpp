@@ -76,7 +76,7 @@ int main(void)
           if(turn == WHITE) //White forfeited the game, black wins
             winner = BLACK;
           else
-            winner == WHITE; //Black forfeited the game, white wins
+            winner = WHITE; //Black forfeited the game, white wins
           win = true;
         }
         else                                    //Invalid entry
