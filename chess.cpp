@@ -41,7 +41,7 @@ int convert_cols_to_ints(char c)
     return 5;
   if(c == 'G' || c == 'g')
     return 6;
-  if(c == 'H' || c == 'h')
+  //if(c == 'H' || c == 'h')
     return 7;
 }
 
@@ -63,7 +63,7 @@ char convert_ints_to_cols(int i)
     return 'F';
   if(i == 6)
     return 'G';
-  if(i == 7)
+  //if(i == 7)
     return 'H';
 }
 
@@ -253,7 +253,7 @@ int chess::print_path(point at)
     return 0; //No, so return
   //Loop through possible locations
   for(auto p = _board[at.first][at.second].path.begin(); p != _board[at.first][at.second].path.end(); ++p)
-  { 
+  {
     cout << choice << ". " << convert_ints_to_cols(p->second) << p->first + 1 << endl; //Print it out
     choice = choice + 1; //Increment numbering for the next one
   }
@@ -467,7 +467,7 @@ void game::load_path(point from, string color, int flag)
   else if(name == 'q' || name == 'Q') move_queen(from, color, flag); //Is it a queen?
 }
 
-//This function will build the possible paths for a white pawn, checking to see if it's the 
+//This function will build the possible paths for a white pawn, checking to see if it's the
 //correct color and if the move will put the king in danger. A pawn can move in two different
 //ways. It can move up one or up two if it hasn't moved before.
 void game::move_white_pawn(point from, string color, int flag)
@@ -512,7 +512,7 @@ void game::move_white_pawn(point from, string color, int flag)
 void game::move_black_pawn(point from, string color, int flag)
 {
   //Keeps track of whether or not we need to check to see if the king is in danger or not
-  int in_danger = false; 
+  int in_danger = false;
 
   point one = make_pair(from.first - 1, from.second); //Move up one
   if(one.first >= 0 && flag == CHECK_KING) //We need to check the king
@@ -962,7 +962,7 @@ bool game::eliminate_or_block_attacker(string color, point king, vector<test_pie
   vector<point> enemy_new_path; //New path of the enemy to work with
   char p_name; //name at location we want to try moving to
   bool hit_king = false; //Indicates whether or not this scenario has an attacker
-  
+
   //Determine enemy color
   if(color == WHITE) //If I am white
   {
@@ -986,7 +986,7 @@ bool game::eliminate_or_block_attacker(string color, point king, vector<test_pie
     empty_path(m.loc); //Empty it out for use
     load_path(m.loc, color, DONT_CHECK_KING); //Build my new path
     my_new_path = get_path(m.loc); //Retrieve new path of mine
-    
+
     //For all of its possible paths
     for(point p : my_new_path)
     {
@@ -1003,7 +1003,7 @@ bool game::eliminate_or_block_attacker(string color, point king, vector<test_pie
           empty_path(e.loc); //Empty it out for use
           load_path(e.loc, enemy_color, DONT_CHECK_KING); //Build enemy's path
           enemy_new_path = get_path(e.loc); //Retrieve new path of enemy's
-          
+
           //For all of its possible paths
           for(point ep : enemy_new_path)
           {
@@ -1083,7 +1083,7 @@ bool game::can_move_king(point king, string color, vector<test_piece> white_team
       empty_path(e.loc); //Empty it out for use
       load_path(e.loc, enemy_color, DONT_CHECK_KING); //Build enemy's path
       enemy_new_path = get_path(e.loc); //Retrieve new path of enemy's
-    
+
       //And for all of its possible paths
       for(point p : enemy_new_path)
       {
@@ -1148,7 +1148,7 @@ int game::checked(string color, int flag)
     empty_path(e.loc);
     load_path(e.loc, enemy_color, DONT_CHECK_KING);
     enemy_new_path = get_path(e.loc);
-    
+
     //Will any of its possible paths hit my king?
     for(point p : enemy_new_path)
     {
@@ -1167,7 +1167,7 @@ int game::checked(string color, int flag)
             copy_path(enemy_old_path, e.loc);
             return CHECKMATE; //Thus we are in checkmate
           }
-          
+
           if(!can_move_king(king, color, white_team, black_team)) //Can we move the king?
           {
             //No
