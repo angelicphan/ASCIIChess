@@ -42,7 +42,7 @@ int convert_cols_to_ints(char c)
   if(c == 'G' || c == 'g')
     return 6;
   //if(c == 'H' || c == 'h')
-    return 7;
+  return 7;
 }
 
 //This function converts the columns that have already been converted
@@ -64,7 +64,7 @@ char convert_ints_to_cols(int i)
   if(i == 6)
     return 'G';
   //if(i == 7)
-    return 'H';
+  return 'H';
 }
 
 //***************************************************************************************************************
@@ -247,17 +247,19 @@ point chess::get_king(string color, vector<test_piece> & white_team, vector<test
 //choices there are
 int chess::print_path(point at)
 {
-  int choice = 1; //Labels a move with a number so it's easier for user to pick one
+  int choice = 0; //Labels a move with a number so it's easier for user to pick one
 
   if(_board[at.first][at.second].path.empty()) //Are there any possible moves?
     return 0; //No, so return
+  cout << choice << ". Choose a different piece" << endl; //Can pick another piece
+  choice = choice + 1; //Increment numbering for the next one
   //Loop through possible locations
   for(auto p = _board[at.first][at.second].path.begin(); p != _board[at.first][at.second].path.end(); ++p)
   {
     cout << choice << ". " << convert_ints_to_cols(p->second) << p->first + 1 << endl; //Print it out
     choice = choice + 1; //Increment numbering for the next one
   }
-  return choice - 1; //Returns how many choices there are
+  return choice; //Returns how many choices there are
 }
 
 //Reset all pieces as not being able to en passant
@@ -350,7 +352,8 @@ void game::print_captured(void)
 //boundaries of the board. Furthermore, it will print out the list of possible
 //locations that piece could move to, and let the user select one out of them all.
 //The move will be initiated, and positions of game pieces will be updated.
-void game::prompt_to_move(string color)
+//Returns 0 if the user wanted to quit rather than move; 1 if the move is executed.
+int game::prompt_to_move(string color)
 {
   bool valid = false;     //indicates if entries are valid
   char from[4];           //response from user of where to move from
@@ -367,77 +370,84 @@ void game::prompt_to_move(string color)
     {
       do
       {
-        // Get starting location of piece
-        cout << "Location of piece to move (column then row, i.e. A2): ";
-        cin.get(from, 4);
-        cin.ignore(100, '\n');
-
-        // Check if it's a valid entry
-        if(((from[0] >= 'A') && (from[0] <= 'H')) || ((from[0] >= 'a') && (from[0] <= 'h'))) // Column correct?
+        do
         {
-          fr = from[1] - '0'; // Convert number of char type to int
-          if(fr >= 1 && fr <= 8) // Row correct?
-            valid = true;
-        }
+          // Get starting location of piece
+          cout << "Location of piece to move (column then row, i.e. A2) OR q/Q to quit: ";
+          cin.get(from, 4);
+          cin.ignore(100, '\n');
+
+          // Check if they want to quit instead
+          if(from[0] == 'q' || from[0] == 'Q')
+            return 0;
+
+          // Check if it's a valid entry
+          if(((from[0] >= 'A') && (from[0] <= 'H')) || ((from[0] >= 'a') && (from[0] <= 'h'))) // Column correct?
+          {
+            fr = from[1] - '0'; // Convert number of char type to int
+            if(fr >= 1 && fr <= 8) // Row correct?
+              valid = true;
+          }
+          if(!valid)
+            cout << "Invalid entry, please enter a valid column, and then a valid row!" << endl;
+        }while(!valid);
+
+
+        //Convert to point
+        fc = convert_cols_to_ints(from[0]);
+        source = make_pair(fr - 1, fc);
+
+        // Check if it's their color piece
+        valid = is_my_color(source, color);
         if(!valid)
-          cout << "Invalid entry, please enter a valid column, and then a valid row!" << endl;
+          cout << "Invalid entry, that is not your piece!" << endl;
       }while(!valid);
 
+      //Load paths for the piece
+      load_path(source, color, CHECK_KING);
 
-      //Convert to point
-      fc = convert_cols_to_ints(from[0]);
-      source = make_pair(fr - 1, fc);
-
-      // Check if it's their color piece
-      valid = is_my_color(source, color);
-      if(!valid)
-        cout << "Invalid entry, that is not your color!" << endl;
+      //Print valid paths for that piece
+      options = print_path(source);
+      if(!options)
+      {
+        valid = false;
+        cout << endl << "There are no possible moves for piece. Please pick another piece." << endl;
+      }
     }while(!valid);
 
-    //Load paths for the piece
-    load_path(source, color, CHECK_KING);
-
-    //Print valid paths for that piece
-    options = print_path(source);
-    if(!options)
+    do
     {
+      //Reset to invalid
       valid = false;
-      cout << endl << "There are no possible moves for piece. Please pick another piece." << endl;
-    }
-  }while(!valid);
+      //Get valid paths
 
-  do
-  {
-    //Reset to invalid
-    valid = false;
-    //Get valid paths
-
-    // Get ending location of piece
-    cout << endl << "Destination of piece (column the row, i.e. '1' for option 1): ";
-    cin >> to;
-    while(cin.fail()) //Make sure they entered an integer
-    {
-      cin.clear(); //Clear input to prepare for new entry
-      cin.ignore(100, '\n');
-      cout << "Invalid entry type. Please enter only integers." << endl; //Output that there was an error
-      //Prompt user for another input
+      // Get ending location of piece
       cout << endl << "Destination of piece (column the row, i.e. '1' for option 1): ";
       cin >> to;
-    }
-    cin.ignore(100, '\n');
-    cout << endl;
+      while(cin.fail()) //Make sure they entered an integer
+      {
+        cin.clear(); //Clear input to prepare for new entry
+        cin.ignore(100, '\n');
+        cout << "Invalid entry type. Please enter only integers." << endl; //Output that there was an error
+        //Prompt user for another input
+        cout << endl << "Destination of piece (column the row, i.e. '1' for option 1): ";
+        cin >> to;
+      }
+      cin.ignore(100, '\n');
+      cout << endl;
 
-    // Check if it's a valid entry
-    options = num_in_path(source);
-    for(int o = 1; o <= options; ++o)
-    {
-      if(to == o)
-        valid = true;
-    }
+      // Check if it's a valid entry
+      options = num_in_path(source);
+      for(int o = 0; o <= options; ++o)
+      {
+        if(to == o)
+          valid = true;
+      }
 
-    if(!valid)
-      cout << "Sorry, invalid move" << endl;
-  }while(!valid);
+      if(!valid)
+        cout << "Sorry, invalid move" << endl;
+    }while(!valid);
+  }while(!to); //User wants to pick another piece to move
 
   //Make the dest point
   dest = get_location(source, to - 1);
@@ -448,7 +458,8 @@ void game::prompt_to_move(string color)
   //Clear old possible paths to refill with new positions later on
   empty_path(source);
   empty_path(dest);
-
+  
+  return 1; // Move executed
 }
 
 //This function will discern what type of game piece the user has chosen,
@@ -519,7 +530,7 @@ void game::move_black_pawn(point from, string color, int flag)
     in_danger = will_be_checked(from, one, color, REGULAR); //Returns whether or not he's in danger
   if(one.first >= 0 && occupied(one, color) == SPACE && !in_danger) //Is the move valid?
   {
-      build_path(from, one); //Add to path
+    build_path(from, one); //Add to path
     if(!has_moved(from)) //First time moving = can down up two
     {
       point two = make_pair(from.first - 2, from.second); //Move up two
@@ -536,7 +547,7 @@ void game::move_black_pawn(point from, string color, int flag)
   if(lower_right.first >= 0 && lower_right.second < COLS && flag == CHECK_KING) //We need to check the king
     in_danger = will_be_checked(from, lower_right, color, REGULAR); //Returns whether or not he's in danger
   if(lower_right.first >= 0 && lower_right.second < COLS && occupied(lower_right, color) == NOT_MY_COLOR && !in_danger) //Is the move valid?
-      build_path(from, lower_right); //Add to path
+    build_path(from, lower_right); //Add to path
   point lower_left = make_pair(from.first - 1, from.second - 1); //Enemy on the left?
   in_danger = false; //Reset flag
   if(lower_left.first >= 0 && lower_left.second >= 0 && flag == CHECK_KING) //We need to check the king
@@ -715,7 +726,7 @@ void game::move_bishop(point from, string color, int flag)
 }
 
 //Build list of possible moves for king as long as it doesn't put him in danger.
-  //King can move in 8 possible directions (not including castling), and only if it won't be in check.
+//King can move in 8 possible directions (not including castling), and only if it won't be in check.
 void game::move_king(point from, string color, int flag)
 {
   point move; //Keeps track of the move a king can make
@@ -772,7 +783,7 @@ int game::occupied(point location, string color)
     {
       if(islower(name))//Is it my own? Can't move if lowercase (white)
         return MY_COLOR; // It is also white
-     return NOT_MY_COLOR; // It is black = can capture
+      return NOT_MY_COLOR; // It is black = can capture
     }
     return SPACE; // It is a blank space
   }
@@ -781,7 +792,7 @@ int game::occupied(point location, string color)
   {
     if(isupper(name))//Is it my own? Can't move if uppercase (black)
       return MY_COLOR; // It is also black
-   return NOT_MY_COLOR; // It is white = can capture
+    return NOT_MY_COLOR; // It is white = can capture
   }
   return SPACE;  // It is a blank space
 }
@@ -791,6 +802,8 @@ int game::occupied(point location, string color)
 bool game::is_my_color(point location, string color)
 {
   char name = get_name(location); //Get the name of the piece we are looking at
+  if(name == BLANK_NAME) //Blank location, so not your piece
+    return false;
   string pcolor = WHITE;
 
   if(isupper(name))
@@ -884,16 +897,16 @@ void game::can_castling(point king, string color, int flag)
   point left_rookie = make_pair(king.first, king.second - 4);
   if(get_name(left_one) == ' ' && get_name(left_two) == ' ' && get_name(left_three) == ' ') //Nothing in between pieces
   {
-     if(color == WHITE) //We are white, so we want a white rookie
-     {
-        if(get_name(left_rookie) == 'r' && !has_moved(left_rookie) && !will_be_checked(king, left_two, color, CASTLING)) //It is the correct rookie and hasn't moved yet
-          build_path(king, left_two); //Add to list of possible moves
-     }
-     else //We are black so we want a black rookie
-     {
-        if(get_name(left_rookie) == 'R' && !has_moved(left_rookie) && !will_be_checked(king, left_two, color, CASTLING)) //It is the correct rookie and hasn't moved yet
-          build_path(king, left_two); //Add to list of possible moves
-     }
+    if(color == WHITE) //We are white, so we want a white rookie
+    {
+      if(get_name(left_rookie) == 'r' && !has_moved(left_rookie) && !will_be_checked(king, left_two, color, CASTLING)) //It is the correct rookie and hasn't moved yet
+        build_path(king, left_two); //Add to list of possible moves
+    }
+    else //We are black so we want a black rookie
+    {
+      if(get_name(left_rookie) == 'R' && !has_moved(left_rookie) && !will_be_checked(king, left_two, color, CASTLING)) //It is the correct rookie and hasn't moved yet
+        build_path(king, left_two); //Add to list of possible moves
+    }
   }
 }
 

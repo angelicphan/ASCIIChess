@@ -196,8 +196,8 @@ class game : public chess
     //Destructor
     ~game(void) {}
 
-    //Prompts the user for what piece they would like to move and where
-    void prompt_to_move(string color);
+    //Prompts the user for what piece they would like to move and where, or let them exit
+    int prompt_to_move(string color);
 
     //Based on the game piece the user chosed, it will load up the possible moves
     //of that game piece

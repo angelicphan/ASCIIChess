@@ -50,14 +50,14 @@ int main(void)
       if(win)
         break;
 
-      //Display current player's turn
-      cout << "Current turn: " << turn << endl;
-
-      //Menu
-      cout << endl << "Commands:    (M)ove    (Q)uit" << endl;
-
       do
       {
+        //Display current player's turn
+        cout << "Current turn: " << turn << endl;
+
+        //Menu
+        cout << endl << "Commands:    (M)ove    (Q)uit" << endl;
+
         invalid_entry = 0; //Reset to valid entry
         //Get choice
         cout << "Choice: ";
@@ -69,8 +69,12 @@ int main(void)
         if(choice == 'M' || choice == 'm')      //User wants to move
         {
           cout << "BLACK are uppercase pieces, WHITE are lowercase pieces" << endl;
-          mygame.prompt_to_move(turn); //Move user
+          if(!mygame.prompt_to_move(turn)) //Move user or if function returns 0, then the user wanted to quit instead
+            choice = 'Q'; // User chosed to quit
+
         }
+        if(choice == 'M' || choice == 'm')      //User still wanted to move, so it was executed
+          cout << "Move executed" << endl;
         else if(choice == 'Q' || choice == 'q') //User wants to quit the game
         {
           if(turn == WHITE) //White forfeited the game, black wins
@@ -79,7 +83,7 @@ int main(void)
             winner = WHITE; //Black forfeited the game, white wins
           win = true;
         }
-        else                                    //Invalid entry
+        else //Invalid entry, wasn't move or quit
         {
           cout << "Invalid entry" << endl;
           invalid_entry = 1;
